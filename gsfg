@@ -1,0 +1,36 @@
+//  on a 2 minute chart Length 29 Multiplier 2
+
+study("Study Trend Trader ATR Stop", overlay = true)
+
+Length = input(15, minval=2)
+
+Multiplier = input(2, minval=0.1)
+
+avgTR      = wma(atr(1), Length)
+
+highestC   = highest(Length)
+lowestC    = lowest(Length)
+
+hiLimit = highestC[1]-(avgTR[1] * Multiplier)
+loLimit = lowestC[1]+(avgTR[1] * Multiplier)
+
+ret = iff(close > hiLimit and close > loLimit, hiLimit,
+        iff(close < loLimit and close < hiLimit, loLimit, nz(ret[1], 0)))
+
+pos =  iff(close > ret, 1,
+      iff(close < ret, -1, nz(pos[1], 0))) 
+      
+      
+barcolor(pos == -1 ? red: pos == 1 ? lime : blue )
+plot(ret, color= blue , title="Trend Trader Strategy")
+plot(hiLimit, color= black)
+plot(loLimit, color = black)
+plot(highestC, color = blue)
+plot(lowestC, color = blue)
+//plot(avgTR * 125, color = gray)
+
+long = close > ret and ret > vwap or close > ret and ret < vwap // long = crossover(close, ret) and ret > vwap 
+short = close < ret and ret < vwap or close < ret and ret > vwap // short = crossunder(close, ret) and ret < vwap 
+
+//strategy.entry("long", strategy.long, when=long)
+//strategy.entry("short", strategy.short, when=short)
